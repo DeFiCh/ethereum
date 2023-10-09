@@ -1,6 +1,6 @@
 use ethereum_types::{Bloom, H160, H256, H64, U256};
-use sha3::{Digest, Keccak256};
 use lru::LruCache;
+use sha3::{Digest, Keccak256};
 use spin::Mutex;
 use std::sync::OnceLock;
 
@@ -9,11 +9,10 @@ use crate::Bytes;
 fn header_hash_cache() -> &'static Mutex<lru::LruCache<Vec<u8>, H256>> {
 	pub static CACHE: OnceLock<Mutex<lru::LruCache<Vec<u8>, H256>>> = OnceLock::new();
 	CACHE.get_or_init(|| {
-		let cache_size: std::num::NonZeroUsize = std::num::NonZeroUsize::new(1024 * 10).unwrap();
+		let cache_size = std::num::NonZeroUsize::new(1024 * 10).unwrap();
 		Mutex::new(LruCache::new(cache_size))
 	})
 }
-
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[derive(rlp::RlpEncodable, rlp::RlpDecodable)]
@@ -69,9 +68,12 @@ impl Header {
 	#[must_use]
 	pub fn hash(&self) -> H256 {
 		let rlp_encoded = &rlp::encode(self);
-		header_hash_cache().lock().get_or_insert(rlp_encoded.to_vec(), move || {
-			H256::from_slice(Keccak256::digest(rlp_encoded).as_slice())
-		}).clone()
+		header_hash_cache()
+			.lock()
+			.get_or_insert(rlp_encoded.to_vec(), move || {
+				H256::from_slice(Keccak256::digest(rlp_encoded).as_slice())
+			})
+			.clone()
 	}
 }
 
