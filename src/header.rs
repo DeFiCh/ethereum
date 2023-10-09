@@ -1,7 +1,18 @@
 use ethereum_types::{Bloom, H160, H256, H64, U256};
+use lru::LruCache;
 use sha3::{Digest, Keccak256};
+use spin::Mutex;
+use std::sync::OnceLock;
 
 use crate::Bytes;
+
+fn header_hash_cache() -> &'static Mutex<lru::LruCache<Vec<u8>, H256>> {
+	pub static CACHE: OnceLock<Mutex<lru::LruCache<Vec<u8>, H256>>> = OnceLock::new();
+	CACHE.get_or_init(|| {
+		let cache_size = std::num::NonZeroUsize::new(100).unwrap();
+		Mutex::new(LruCache::new(cache_size))
+	})
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[derive(rlp::RlpEncodable, rlp::RlpDecodable)]
@@ -11,6 +22,7 @@ use crate::Bytes;
 )]
 #[cfg_attr(feature = "with-serde", derive(serde::Serialize, serde::Deserialize))]
 /// Ethereum header definition.
+
 pub struct Header {
 	pub parent_hash: H256,
 	pub ommers_hash: H256,
@@ -27,7 +39,7 @@ pub struct Header {
 	pub extra_data: Bytes,
 	pub mix_hash: H256,
 	pub nonce: H64,
-	pub base_fee: U256
+	pub base_fee: U256,
 }
 
 impl Header {
@@ -55,7 +67,13 @@ impl Header {
 
 	#[must_use]
 	pub fn hash(&self) -> H256 {
-		H256::from_slice(Keccak256::digest(&rlp::encode(self)).as_slice())
+		let rlp_encoded = &rlp::encode(self);
+		header_hash_cache()
+			.lock()
+			.get_or_insert(rlp_encoded.to_vec(), move || {
+				H256::from_slice(Keccak256::digest(rlp_encoded).as_slice())
+			})
+			.clone()
 	}
 }
 
@@ -75,7 +93,7 @@ pub struct PartialHeader {
 	pub extra_data: Bytes,
 	pub mix_hash: H256,
 	pub nonce: H64,
-	pub base_fee: U256
+	pub base_fee: U256,
 }
 
 impl From<Header> for PartialHeader {
