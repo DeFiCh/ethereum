@@ -17,7 +17,6 @@ pub struct Block<T> {
 	pub header: Header,
 	pub transactions: Vec<T>,
 	pub ommers: Vec<Header>,
-
 	#[serde(skip_serializing)]
 	pub hash: H256,
 }
@@ -41,7 +40,8 @@ impl<T: EnvelopedDecodable> Decodable for Block<T> {
 	fn decode(rlp: &Rlp) -> Result<Self, DecoderError> {
 		let header: Header = rlp.val_at(0)?;
 		Ok(Self {
-			header: header.clone(),
+			hash: header.hash(),
+			header,
 			transactions: rlp
 				.list_at::<Vec<u8>>(1)?
 				.into_iter()
@@ -51,7 +51,6 @@ impl<T: EnvelopedDecodable> Decodable for Block<T> {
 				})
 				.collect::<Result<Vec<_>, _>>()?,
 			ommers: rlp.list_at(2)?,
-			hash: header.hash(),
 		})
 	}
 }
@@ -89,10 +88,10 @@ where
 {
 	fn from(t: BlockV0) -> Self {
 		Self {
-			header: t.header.clone(),
+			hash: t.header.hash(),
+			header: t.header,
 			transactions: t.transactions.into_iter().map(|t| t.into()).collect(),
 			ommers: t.ommers,
-			hash: t.header.hash(),
 		}
 	}
 }
@@ -100,10 +99,10 @@ where
 impl From<BlockV1> for BlockV2 {
 	fn from(t: BlockV1) -> Self {
 		Self {
-			header: t.header.clone(),
+			hash: t.header.hash(),
+			header: t.header,
 			transactions: t.transactions.into_iter().map(|t| t.into()).collect(),
 			ommers: t.ommers,
-			hash: t.header.hash(),
 		}
 	}
 }
