@@ -60,7 +60,7 @@ impl Header {
 	#[must_use]
 	pub fn hash(&mut self) -> H256 {
 		let h = &self.hash_cache;
-		if h.get().is_some() {
+		if h.get().is_none() {
 			let val = H256::from_slice(Keccak256::digest(&rlp::encode(self)).as_slice());
 			h.set(Some(val));
 		}
