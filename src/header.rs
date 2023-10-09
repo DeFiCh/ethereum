@@ -9,7 +9,7 @@ use crate::Bytes;
 fn header_hash_cache() -> &'static Mutex<lru::LruCache<Vec<u8>, H256>> {
 	pub static CACHE: OnceLock<Mutex<lru::LruCache<Vec<u8>, H256>>> = OnceLock::new();
 	CACHE.get_or_init(|| {
-		let cache_size = std::num::NonZeroUsize::new(1024 * 10).unwrap();
+		let cache_size = std::num::NonZeroUsize::new(100).unwrap();
 		Mutex::new(LruCache::new(cache_size))
 	})
 }
