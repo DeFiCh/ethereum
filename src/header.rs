@@ -1,7 +1,7 @@
 use ethereum_types::{Bloom, H160, H256, H64, U256};
 use lru::LruCache;
 use sha3::{Digest, Keccak256};
-use spin::Mutex;
+use parking_lot::Mutex;
 use std::sync::OnceLock;
 
 use crate::Bytes;

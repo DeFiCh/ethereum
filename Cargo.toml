@@ -21,7 +21,7 @@ codec = { package = "parity-scale-codec", version = "3.2", default-features = fa
 scale-info = { version = "2.3", default-features = false, features = ["derive"], optional = true }
 serde = { version = "1.0", default-features = false, features = ["derive"], optional = true }
 lru = "0.12"
-spin = "0.9.8"
+parking_lot = "0.12.1"
 
 [dev-dependencies]
 hex-literal = "0.3"
