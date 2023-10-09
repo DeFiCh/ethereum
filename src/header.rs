@@ -67,7 +67,7 @@ impl Header {
 	}
 
 	#[must_use]
-	pub fn hash(&mut self) -> H256 {
+	pub fn hash(&self) -> H256 {
 		let rlp_encoded = &rlp::encode(self);
 		header_hash_cache().lock().get_or_insert(rlp_encoded.to_vec(), move || {
 			H256::from_slice(Keccak256::digest(rlp_encoded).as_slice())
