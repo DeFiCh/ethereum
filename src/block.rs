@@ -17,7 +17,7 @@ pub struct Block<T> {
 	pub header: Header,
 	pub transactions: Vec<T>,
 	pub ommers: Vec<Header>,
-	#[serde(skip_serializing)]
+	#[serde(skip)]
 	pub hash: H256,
 }
 
